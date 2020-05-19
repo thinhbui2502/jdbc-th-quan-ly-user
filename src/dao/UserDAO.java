@@ -143,4 +143,54 @@ public class UserDAO implements IUserDAO {
         System.out.println(callableStatement);
         callableStatement.executeUpdate();
     }
+
+    @Override
+    public void addUserTransaction(User user, int[] permision) {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        PreparedStatement psAssigment = null;
+        ResultSet resultSet = null;
+        try {
+            connection = getConnection();
+            connection.setAutoCommit(false);
+            preparedStatement = connection.prepareStatement(INSERT_USERS_SQL, Statement.RETURN_GENERATED_KEYS);
+            preparedStatement.setString(1, user.getName());
+            preparedStatement.setString(2, user.getEmail());
+            preparedStatement.setString(3, user.getCountry());
+            int rowAffected = preparedStatement.executeUpdate();
+            resultSet = preparedStatement.getGeneratedKeys();
+            int userId = 0;
+            if (resultSet.next())
+                userId = resultSet.getInt(1);
+            if (rowAffected == 1) {
+                String sqlPilot = "insert into User_Permision (userID, permisionID) " + " values(?,?)";
+                psAssigment = connection.prepareStatement(sqlPilot);
+                for (int permisionId : permision) {
+                    psAssigment.setInt(1, userId);
+                    psAssigment.setInt(2, permisionId);
+                    psAssigment.executeUpdate();
+                }
+                connection.commit();
+            } else {
+                connection.rollback();
+            }
+        } catch (SQLException ex) {
+            try {
+                if (connection != null)
+                    connection.rollback();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
+            System.out.println(ex.getMessage());
+        } finally {
+            try {
+                if (resultSet != null) resultSet.close();
+                if (preparedStatement != null) preparedStatement.close();
+                if (psAssigment != null) psAssigment.close();
+                if (connection != null) connection.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+    }
 }
