@@ -26,7 +26,7 @@
     </tr>
     <tr>
         <td>Email:</td>
-        <td>${user.country}</td>
+        <td>${user.email}</td>
     </tr>
     <tr>
         <td>Country:</td>

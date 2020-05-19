@@ -110,4 +110,37 @@ public class UserDAO implements IUserDAO {
         rowDeleted = statement.executeUpdate() > 0;
         return rowDeleted;
     }
+
+    @Override
+    public User getUserByID(int id) {
+        User user = null;
+        String query = "{call getUserById(?)}";
+        Connection connection = getConnection();
+        try {
+            CallableStatement callableStatement = connection.prepareCall(query);
+            callableStatement.setInt(1, id);
+            ResultSet rs = callableStatement.executeQuery();
+            while (rs.next()) {
+                String name = rs.getString("name");
+                String email = rs.getString("email");
+                String country = rs.getString("country");
+                user = new User(id, name, email, country);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return user;
+    }
+
+    @Override
+    public void addNewUser(User user) throws SQLException {
+        String query = "{call addNewUser(?,?,?)}";
+        Connection connection = getConnection();
+        CallableStatement callableStatement = connection.prepareCall(query);
+        callableStatement.setString(1, user.getName());
+        callableStatement.setString(2, user.getEmail());
+        callableStatement.setString(3, user.getCountry());
+        System.out.println(callableStatement);
+        callableStatement.executeUpdate();
+    }
 }
