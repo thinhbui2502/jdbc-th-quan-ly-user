@@ -21,4 +21,6 @@ public interface IUserDAO {
     public void addNewUser (User user) throws SQLException;
 
     public void addUserTransaction (User user, int[] permision);
+
+    public void insertUpdateWithoutTransaction();
 }
